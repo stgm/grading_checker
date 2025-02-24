@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require "grading_checker"
+
+# Usage explanation
+if ARGV.include?("--help") || ARGV.include?("-h")
+  puts <<~HELP
+    Usage: grading_checker [DIRECTORY]
+    
+    Validates grading.yml and submit.yml files in the specified DIRECTORY.
+    If no directory is provided, the current working directory is used.
+
+    Checks performed:
+      - Ensures no duplicate submission names in submit.yml files.
+      - Validates the structure of grading.yml files in the root and subdirectories.
+      - Reports errors if any issues are found.
+
+    Exit codes:
+      0 - All checks passed.
+      1 - Validation errors detected.
+
+    Options:
+      -h, --help   Show this help message and exit.
+  HELP
+  exit 0
+end
+
+root_path = ARGV[0] || Dir.pwd
+file_manager = GradingChecker::FileManager.new(root_path)
+validator = GradingChecker::GradingYAMLValidator.new(file_manager)
+validator.validate_duplicate_submit_names!
+validator.validate_root_grading_config!
+validator.validate_subdir_configs!
+validator.report_success("all grading.yml files seem to be valid")
